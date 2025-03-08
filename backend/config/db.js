@@ -1,8 +1,13 @@
 import mongoose from "mongoose";
 
+// Connect to MongoDB
+// load env file
+require('dotenv').config();
+
+
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect("mongodb+srv://vjdevil22914125:vinay25102002@vinay.nszf4.mongodb.net/", {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
     });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
