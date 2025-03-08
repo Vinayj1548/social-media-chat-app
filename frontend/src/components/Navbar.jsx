@@ -14,7 +14,7 @@ const Navbar = () => {
     const fetchUser = async () => {
       try {
         // Make an API request to get the logged-in user's details
-        const response = await axios.get("http://backend-pearl-alpha.vercel.app/api/users"); // Replace with your actual API endpoint
+        const response = await axios.get("https://backend-pearl-alpha.vercel.app/api/users"); // Replace with your actual API endpoint
         const users = await response.data;
         const loggedUserID = localStorage.getItem("user");
 

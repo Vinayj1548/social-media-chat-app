@@ -32,7 +32,7 @@ const Form = () => {
     console.log("Form Submitted:", formData);
 
     try {
-      let res = await fetch("http://backend-pearl-alpha.vercel.app/api/auth/register", {
+      let res = await fetch("https://backend-pearl-alpha.vercel.app/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
