@@ -22,7 +22,7 @@ function DeleteButton() {
 
   const deleteUsr = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/delete", {
+      const res = await fetch("http://backend-pearl-alpha.vercel.app/api/auth/delete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -12,7 +12,7 @@ const SearchBox = ({ onSelectUser }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/users");
+        const response = await fetch("http://backend-pearl-alpha.vercel.app/api/users");
         const data = await response.json();
         setUsers(data);
       } catch (err) {
