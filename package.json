@@ -1,0 +1,20 @@
+{
+  "name": "social-media-chat-app",
+  "version": "1.0.0",
+  "description": "Make sure you have the following installed on your system: - [Node.js](https://nodejs.org/) (Latest LTS version recommended) - [MongoDB Atlas](https://www.mongodb.com/atlas/database) account and connection string - [Nodemon](https://www.npmjs.com/package/nodemon) (For backend development, install globally if needed: `npm install -g nodemon`)",
+  "homepage": "https://github.com/Vinayj1548/social-media-chat-app#readme",
+  "bugs": {
+    "url": "https://github.com/Vinayj1548/social-media-chat-app/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vinayj1548/social-media-chat-app.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

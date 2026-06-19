@@ -84,8 +84,8 @@ app.use(
 );
 
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 // Server Listening
 const PORT = process.env.PORT || 5000;
