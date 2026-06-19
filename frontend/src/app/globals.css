@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #504673;
+  --foreground: #ffffff;
+
+  --primary: #61568c;
+  --secondary: #f2a488;
+  --accent: #3bbfa7;
+
+  --card: #5c4f82;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+
+  --color-card: var(--card);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #504673;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f2a488;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e48d6d;
+}
+
+/* Selection */
+
+::selection {
+  background: #f2a488;
+  color: white;
+}
+
+/* Buttons */
+
+button {
+  cursor: pointer;
+}
+
+/* Inputs */
+
+input,
+textarea {
+  outline: none;
+}
+
+/* Links */
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
