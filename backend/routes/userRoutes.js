@@ -1,16 +1,27 @@
+import express from "express";
 import User from "../models/userModel.js";
-import express from "express"
 
-const router = express.Router()
+const router = express.Router();
 
-router.get("/users" , async (req , res)=>{
-    try {
-        const users = await User.find({}, "id username email"); // Fetch selected fields
-        return res.status(200).json(users);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        return res.status(500).json({ error: "Server error" }); // Use `return` to stop execution
-      }
-})
+// GET ALL USERS
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find(
+      {},
+      "_id username email"
+    );
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error(
+      "Error fetching users:",
+      error
+    );
+
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
 
 export default router;

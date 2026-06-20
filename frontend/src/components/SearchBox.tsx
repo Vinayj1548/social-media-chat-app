@@ -50,7 +50,7 @@ export default function SearchBox({
 
           const response =
             await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/users`
+              `${process.env.NEXT_PUBLIC_API_URL}/auth/users`
             );
 
           const data =

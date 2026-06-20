@@ -16,6 +16,9 @@ import {
 import { AuthContext } from "@/context/AuthContext";
 
 export default function LoginForm() {
+  // debug 
+  
+
   const router = useRouter();
 
   const auth = useContext(AuthContext);
