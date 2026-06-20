@@ -10,9 +10,7 @@
 
   --card: #5c4f82;
   --border: rgba(255, 255, 255, 0.1);
-}
 
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -28,8 +26,6 @@
 }
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 

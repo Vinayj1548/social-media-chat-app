@@ -2,7 +2,6 @@
 
 import { useContext, useState } from "react";
 import { useRouter } from "next/navigation";
-import Modal from "react-bootstrap/Modal";
 import { ToastContainer, toast } from "react-toastify";
 import { AuthContext } from "@/context/AuthContext";
 
@@ -16,7 +15,6 @@ export default function DeleteButton() {
   const router = useRouter();
 
   const [show, setShow] = useState(false);
-
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -24,20 +22,32 @@ export default function DeleteButton() {
     password: "",
   });
 
-  const handleClose = () => setShow(false);
+  const toggleModal = () => {
+    setShow((prev) => !prev);
+  };
 
-  const handleShow = () => setShow(true);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      username: "",
+      password: "",
+    });
+  };
+
   const deleteUser = async () => {
+    if (!formData.username.trim() || !formData.password.trim()) {
+      toast.error("Please enter username and password");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -49,114 +59,172 @@ export default function DeleteButton() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to delete account"
-        );
+        throw new Error(data.message || "Failed to delete account");
       }
+
+      toast.success("Account deleted successfully!");
 
       localStorage.clear();
 
       logout();
 
-      toast.success("Account deleted successfully!");
+      resetForm();
 
       setTimeout(() => {
-        router.push("/signup");
-      }, 1000);
+        router.replace("/signup");
+      }, 1200);
     } catch (error) {
-      console.error("Delete Error:", error);
+      console.error("Delete Account Error:", error);
 
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong"
+        error instanceof Error ? error.message : "Something went wrong",
       );
     } finally {
       setLoading(false);
+      setShow(false);
     }
   };
 
   return (
     <>
-      <ToastContainer
-        position="bottom-right"
-        theme="dark"
-      />
+      <ToastContainer position="bottom-right" theme="dark" />
+
+      {/* Button */}
 
       <button
-        onClick={handleShow}
-        className="px-6 py-2 text-2xl font-semibold text-white duration-300 hover:underline"
+        onClick={toggleModal}
+        className="
+          rounded-lg
+          border
+          border-red-400/30
+          px-4
+          py-2
+          text-sm
+          font-medium
+          text-red-300
+          transition-all
+          hover:bg-red-500/10
+        "
       >
         Delete Account
       </button>
 
-      <Modal
-        show={show}
-        onHide={handleClose}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Confirm Account Deletion
-          </Modal.Title>
-        </Modal.Header>
+      {/* Tailwind Modal */}
 
-        <Modal.Body>
-          <p className="mb-2">
-            Enter Username
-          </p>
-
-          <input
-            name="username"
-            type="text"
-            value={formData.username}
-            onChange={handleChange}
-            className="mb-4 w-full rounded-lg border p-2"
-            placeholder="Username"
-          />
-
-          <p className="mb-2">
-            Enter Password
-          </p>
-
-          <input
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full rounded-lg border p-2"
-            placeholder="Password"
-          />
-        </Modal.Body>
-
-        <Modal.Footer>
-          <button
-            onClick={handleClose}
-            className="rounded-lg bg-gray-300 px-4 py-2"
+      {show && (
+        <div
+          className="
+            fixed
+            inset-0
+            z-50
+            flex
+            items-center
+            justify-center
+            bg-black/60
+            backdrop-blur-sm
+          "
+        >
+          <div
+            className="
+              w-full
+              max-w-md
+              rounded-2xl
+              bg-[#5C4F82]
+              p-6
+              shadow-2xl
+            "
           >
-            Close
-          </button>
+            <h2 className="mb-2 text-xl font-bold text-white">
+              Delete Account
+            </h2>
 
-          <button
-            disabled={loading}
-            onClick={() => {
-              handleClose();
-              deleteUser();
-            }}
-            className="rounded-lg bg-red-500 px-4 py-2 text-white disabled:opacity-50"
-          >
-            {loading
-              ? "Deleting..."
-              : "Delete"}
-          </button>
-        </Modal.Footer>
-      </Modal>
+            <p className="mb-6 text-sm text-gray-300">
+              This action cannot be undone.
+            </p>
+
+            <div className="space-y-4">
+              <input
+                name="username"
+                type="text"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Username"
+                className="
+                  w-full
+                  rounded-xl
+                  bg-[#61568C]
+                  px-4
+                  py-3
+                  text-white
+                  placeholder:text-gray-400
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#3BBFA7]
+                "
+              />
+
+              <input
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+                className="
+                  w-full
+                  rounded-xl
+                  bg-[#61568C]
+                  px-4
+                  py-3
+                  text-white
+                  placeholder:text-gray-400
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#3BBFA7]
+                "
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={toggleModal}
+                disabled={loading}
+                className="
+                  rounded-lg
+                  bg-[#61568C]
+                  px-4
+                  py-2
+                  text-white
+                "
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={deleteUser}
+                disabled={loading}
+                className="
+                  rounded-lg
+                  bg-red-500
+                  px-4
+                  py-2
+                  font-medium
+                  text-white
+                  hover:bg-red-600
+                  disabled:opacity-50
+                "
+              >
+                {loading ? "Deleting..." : "Delete Account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

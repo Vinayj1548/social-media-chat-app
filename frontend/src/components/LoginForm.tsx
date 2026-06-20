@@ -1,23 +1,14 @@
 "use client";
 
-import {
-  useState,
-  useContext,
-  ChangeEvent,
-  FormEvent,
-} from "react";
+import { useState, useContext, ChangeEvent, FormEvent } from "react";
 
 import { useRouter } from "next/navigation";
-import {
-  ToastContainer,
-  toast,
-} from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 
 import { AuthContext } from "@/context/AuthContext";
 
 export default function LoginForm() {
-  // debug 
-  
+  // debug
 
   const router = useRouter();
 
@@ -27,28 +18,21 @@ export default function LoginForm() {
 
   const { login } = auth;
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] =
-    useState({
-      email: "",
-      password: "",
-    });
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]:
-        e.target.value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -59,63 +43,42 @@ export default function LoginForm() {
         {
           method: "POST",
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(
-            formData
-          ),
-        }
+          body: JSON.stringify(formData),
+        },
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Login failed"
-        );
+        throw new Error(data.message || "Login failed");
       }
 
       if (data.user?.id) {
         login(data.user.id);
 
-        localStorage.setItem(
-          "username",
-          data.user.username
-        );
+        localStorage.setItem("username", data.user.username);
 
-        localStorage.setItem(
-          "userID",
-          data.user.id
-        );
+        localStorage.setItem("userID", data.user.id);
 
         if (data.user?.token) {
-          localStorage.setItem(
-            "token",
-            data.user.token
-          );
+          localStorage.setItem("token", data.user.token);
         }
 
-        toast.success(
-          "Login Successful!"
-        );
+        toast.success("Login Successful!");
 
         setTimeout(() => {
           router.push("/chat");
         }, 1000);
       }
     } catch (error) {
-      console.error(
-        "Login Error:",
-        error
-      );
+      console.error("Login Error:", error);
 
       toast.error(
         error instanceof Error
           ? error.message
-          : "Server error. Try again later."
+          : "Server error. Try again later.",
       );
     } finally {
       setLoading(false);
@@ -124,69 +87,115 @@ export default function LoginForm() {
 
   return (
     <>
-      <ToastContainer
-        position="bottom-right"
-        theme="dark"
-      />
+      <ToastContainer position="bottom-right" theme="dark" />
 
-      <div className="flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-3xl bg-card p-8 shadow-2xl">
-          <h1 className="mb-8 text-center text-5xl font-bold text-white">
-            Login
-          </h1>
+      <div className="flex max-h-[calc(40vh-7rem)] items-center justify-center">
+        <div
+          className="
+        w-full
+        max-w-md
+        rounded-3xl
+        border
+        border-white/10
+        bg-[#5c4f82]
+        p-8
+        shadow-2xl
+        backdrop-blur-md
+      "
+        >
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold text-white">Welcome Back</h1>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+            <p className="mt-2 text-sm text-gray-300">
+              Login to continue chatting
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-gray-200">
                 Email
               </label>
 
               <input
                 type="email"
                 name="email"
-                value={
-                  formData.email
-                }
-                onChange={
-                  handleChange
-                }
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Enter your email"
                 required
-                className="w-full rounded-2xl border border-white/10 bg-primary px-5 py-4 text-white placeholder:text-gray-300 transition-all focus:border-accent"
+                className="
+              w-full
+              rounded-xl
+              border
+              border-white/10
+              bg-[#61568C]
+              px-4
+              py-3
+              text-white
+              placeholder:text-gray-400
+              transition-all
+              duration-200
+              focus:border-[#3BBFA7]
+              focus:ring-2
+              focus:ring-[#3BBFA7]/30
+              focus:outline-none
+            "
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-gray-200">
                 Password
               </label>
 
               <input
                 type="password"
                 name="password"
-                value={
-                  formData.password
-                }
-                onChange={
-                  handleChange
-                }
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Enter your password"
                 required
-                className="w-full rounded-2xl border border-white/10 bg-primary px-5 py-4 text-white placeholder:text-gray-300 transition-all focus:border-accent"
+                className="
+              w-full
+              rounded-xl
+              border
+              border-white/10
+              bg-[#61568C]
+              px-4
+              py-3
+              text-white
+              placeholder:text-gray-400
+              transition-all
+              duration-200
+              focus:border-[#3BBFA7]
+              focus:ring-2
+              focus:ring-[#3BBFA7]/30
+              focus:outline-none
+            "
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full rounded-2xl bg-accent py-4 text-lg font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+              className="
+            w-full
+            rounded-xl
+            bg-[#3BBFA7]
+            py-3
+            text-base
+            font-semibold
+            text-white
+            transition-all
+            duration-200
+            hover:scale-[1.02]
+            hover:shadow-lg
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+          "
             >
-              {loading
-                ? "Logging in..."
-                : "Login"}
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
         </div>

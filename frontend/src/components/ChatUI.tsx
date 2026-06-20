@@ -230,7 +230,8 @@ export default function ChatUI() {
   }
 
   return (
-    <div className="flex flex-row justify-center items-center w-screen p-4">
+    <div className=" flex flex-row justify-center
+    items-center w-screen">
       <ToastContainer />
 
       <SearchBox
@@ -239,9 +240,10 @@ export default function ChatUI() {
         }
       />
 
-      <div className="w-full h-180 bg-[#61568C] rounded-3xl flex flex-col overflow-hidden">
+
+      <div className="w-full h-170 bg-[#61568C] rounded-3xl flex flex-col overflow-hidden">
         {selectedUser ? (
-          <div className="bg-[#F2A488] text-white text-2xl font-bold w-full h-20 flex items-center justify-center">
+          <div className="bg-[#F2A488] text-white text-2xl font-bold w-inherit h-20 flex items-center justify-center">
             Chatting with{" "}
             {
               selectedUser.username

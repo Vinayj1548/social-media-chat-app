@@ -22,18 +22,14 @@ export default function Form() {
     password: "",
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -47,55 +43,37 @@ export default function Form() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Registration failed"
-        );
+        throw new Error(data.message || "Registration failed");
       }
 
       if (data.user?.id) {
         login(data.user.id);
 
-        localStorage.setItem(
-          "username",
-          data.user.username
-        );
+        localStorage.setItem("username", data.user.username);
 
-        localStorage.setItem(
-          "userID",
-          data.user.id
-        );
+        localStorage.setItem("userID", data.user.id);
 
         if (data.user?.token) {
-          localStorage.setItem(
-            "token",
-            data.user.token
-          );
+          localStorage.setItem("token", data.user.token);
         }
 
-        toast.success(
-          "Registration Successful!"
-        );
+        toast.success("Registration Successful!");
 
         setTimeout(() => {
           router.push("/chat");
         }, 1000);
       }
     } catch (error) {
-      console.error(
-        "Registration Error:",
-        error
-      );
+      console.error("Registration Error:", error);
 
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong"
+        error instanceof Error ? error.message : "Something went wrong",
       );
     } finally {
       setLoading(false);
@@ -103,24 +81,34 @@ export default function Form() {
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <ToastContainer
-        position="bottom-right"
-        theme="dark"
-      />
+    <div className="flex h-50vw items-center justify-center">
+      <ToastContainer position="bottom-right" theme="dark" />
 
       {!isAuthenticated && (
-        <div className="w-130 rounded-3xl bg-[#5C4F82] p-10 shadow-2xl">
-          <h2 className="mb-6 text-center text-3xl font-bold text-white">
-            Register
-          </h2>
+        <div
+          className="
+        w-full
+        height-auto
+        rounded-3xl
+        border
+        border-white/10
+        bg-[#5C4F82]
+        p-8
+        shadow-2xl
+        backdrop-blur-md
+      "
+        >
+          <div className="mb-8 text-center">
+            <h2 className="text-4xl font-bold text-white">Create Account</h2>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+            <p className="mt-2 text-sm text-gray-300">
+              Join and start chatting instantly
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-gray-200">
                 Username
               </label>
 
@@ -131,12 +119,28 @@ export default function Form() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your username"
-                className="mt-1 block w-full rounded-xl border border-white/20 bg-primary px-4 py-3 text-white placeholder:text-gray-300 focus:border-accent focus:outline-none"
+                className="
+              w-full
+              rounded-xl
+              border
+              border-white/10
+              bg-[#61568C]
+              px-4
+              py-3
+              text-white
+              placeholder:text-gray-400
+              transition-all
+              duration-200
+              focus:border-[#3BBFA7]
+              focus:ring-2
+              focus:ring-[#3BBFA7]/30
+              focus:outline-none
+            "
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-gray-200">
                 Email
               </label>
 
@@ -147,12 +151,28 @@ export default function Form() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your email"
-                className="mt-1 block w-full rounded-xl border border-white/20 bg-primary px-4 py-3 text-white placeholder:text-gray-300 focus:border-accent focus:outline-none"
+                className="
+              w-full
+              rounded-xl
+              border
+              border-white/10
+              bg-[#61568C]
+              px-4
+              py-3
+              text-white
+              placeholder:text-gray-400
+              transition-all
+              duration-200
+              focus:border-[#3BBFA7]
+              focus:ring-2
+              focus:ring-[#3BBFA7]/30
+              focus:outline-none
+            "
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-gray-200">
                 Password
               </label>
 
@@ -163,18 +183,46 @@ export default function Form() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your password"
-                className="mt-1 block w-full rounded-xl border border-white/20 bg-primary px-4 py-3 text-white placeholder:text-gray-300 focus:border-accent focus:outline-none"
+                className="
+              w-full
+              rounded-xl
+              border
+              border-white/10
+              bg-[#61568C]
+              px-4
+              py-3
+              text-white
+              placeholder:text-gray-400
+              transition-all
+              duration-200
+              focus:border-[#3BBFA7]
+              focus:ring-2
+              focus:ring-[#3BBFA7]/30
+              focus:outline-none
+            "
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#3BBFA7] py-3 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:bg-[rgb(80,164,149)] disabled:cursor-not-allowed disabled:opacity-70"
+              className="
+            w-full
+            rounded-xl
+            bg-[#3BBFA7]
+            py-3
+            text-base
+            font-semibold
+            text-white
+            transition-all
+            duration-200
+            hover:scale-[1.02]
+            hover:shadow-lg
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+          "
             >
-              {loading
-                ? "Creating Account..."
-                : "Register"}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
         </div>
