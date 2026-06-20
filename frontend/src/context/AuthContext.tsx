@@ -25,7 +25,7 @@ export const AuthProvider = ({
   children,
 }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] =
-    useState<boolean>(false);
+    useState(false);
 
   const [userID, setUserID] =
     useState<string | null>(null);

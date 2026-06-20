@@ -6,6 +6,7 @@ import {
   ChangeEvent,
   FormEvent,
 } from "react";
+
 import { useRouter } from "next/navigation";
 import {
   ToastContainer,
@@ -23,14 +24,14 @@ export default function LoginForm() {
 
   const { login } = auth;
 
+  const [loading, setLoading] =
+    useState(false);
+
   const [formData, setFormData] =
     useState({
       email: "",
       password: "",
     });
-
-  const [loading, setLoading] =
-    useState(false);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>
@@ -47,9 +48,9 @@ export default function LoginForm() {
   ) => {
     e.preventDefault();
 
-    setLoading(true);
-
     try {
+      setLoading(true);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
         {
@@ -67,6 +68,13 @@ export default function LoginForm() {
       const data =
         await response.json();
 
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Login failed"
+        );
+      }
+
       if (data.user?.id) {
         login(data.user.id);
 
@@ -80,24 +88,20 @@ export default function LoginForm() {
           data.user.id
         );
 
-        if (data.token) {
+        if (data.user?.token) {
           localStorage.setItem(
             "token",
-            data.token
+            data.user.token
           );
         }
 
         toast.success(
-          "Login successful!"
+          "Login Successful!"
         );
 
         setTimeout(() => {
           router.push("/chat");
         }, 1000);
-      } else {
-        toast.error(
-          "Invalid credentials"
-        );
       }
     } catch (error) {
       console.error(
@@ -106,7 +110,9 @@ export default function LoginForm() {
       );
 
       toast.error(
-        "Server error. Try again later."
+        error instanceof Error
+          ? error.message
+          : "Server error. Try again later."
       );
     } finally {
       setLoading(false);
@@ -146,7 +152,7 @@ export default function LoginForm() {
                 }
                 placeholder="Enter your email"
                 required
-                className="w-full rounded-2xl border border-white/10 bg-primary px-5 py-4 text-white placeholder:text-gray-300 focus:border-accent transition-all"
+                className="w-full rounded-2xl border border-white/10 bg-primary px-5 py-4 text-white placeholder:text-gray-300 transition-all focus:border-accent"
               />
             </div>
 
@@ -166,7 +172,7 @@ export default function LoginForm() {
                 }
                 placeholder="Enter your password"
                 required
-                className="w-full rounded-2xl border border-white/10 bg-primary px-5 py-4 text-white placeholder:text-gray-300 focus:border-accent transition-all"
+                className="w-full rounded-2xl border border-white/10 bg-primary px-5 py-4 text-white placeholder:text-gray-300 transition-all focus:border-accent"
               />
             </div>
 

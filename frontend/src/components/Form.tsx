@@ -10,27 +10,24 @@ export default function Form() {
 
   const auth = useContext(AuthContext);
 
-  if (!auth) {
-    return null;
-  }
+  if (!auth) return null;
 
-  const { login, isAuthenticated } =
-    auth;
+  const { login, isAuthenticated } = auth;
 
-  const [formData, setFormData] =
-    useState({
-      username: "",
-      email: "",
-      password: "",
-    });
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]:
-        e.target.value,
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -40,22 +37,26 @@ export default function Form() {
     e.preventDefault();
 
     try {
+      setLoading(true);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(
-            formData
-          ),
+          body: JSON.stringify(formData),
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Registration failed"
+        );
+      }
 
       if (data.user?.id) {
         login(data.user.id);
@@ -70,10 +71,10 @@ export default function Form() {
           data.user.id
         );
 
-        if (data.token) {
+        if (data.user?.token) {
           localStorage.setItem(
             "token",
-            data.token
+            data.user.token
           );
         }
 
@@ -84,100 +85,96 @@ export default function Form() {
         setTimeout(() => {
           router.push("/chat");
         }, 1000);
-      } else {
-        toast.error(
-          data.message ||
-            "Registration failed"
-        );
       }
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Registration Error:",
+        error
+      );
 
       toast.error(
-        "Something went wrong"
+        error instanceof Error
+          ? error.message
+          : "Something went wrong"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center">
-      <ToastContainer />
+    <div className="flex items-center justify-center">
+      <ToastContainer
+        position="bottom-right"
+        theme="dark"
+      />
 
       {!isAuthenticated && (
-        <div className="bg-[#5C4F82] p-15 rounded-5 w-130">
-          <h2 className="text-2xl font-semibold text-center text-white mb-4">
+        <div className="w-130 rounded-3xl bg-[#5C4F82] p-10 shadow-2xl">
+          <h2 className="mb-6 text-center text-3xl font-bold text-white">
             Register
           </h2>
 
           <form
             onSubmit={handleSubmit}
-            className="space-y-4"
+            className="space-y-5"
           >
             <div>
-              <label className="block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-white">
                 Username
               </label>
 
               <input
                 type="text"
                 name="username"
-                value={
-                  formData.username
-                }
-                onChange={
-                  handleChange
-                }
+                value={formData.username}
+                onChange={handleChange}
                 required
                 placeholder="Enter your username"
-                className="text-white mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="mt-1 block w-full rounded-xl border border-white/20 bg-primary px-4 py-3 text-white placeholder:text-gray-300 focus:border-accent focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-white">
                 Email
               </label>
 
               <input
                 type="email"
                 name="email"
-                value={
-                  formData.email
-                }
-                onChange={
-                  handleChange
-                }
+                value={formData.email}
+                onChange={handleChange}
                 required
                 placeholder="Enter your email"
-                className="text-white mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="mt-1 block w-full rounded-xl border border-white/20 bg-primary px-4 py-3 text-white placeholder:text-gray-300 focus:border-accent focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white">
+              <label className="mb-2 block text-sm font-medium text-white">
                 Password
               </label>
 
               <input
                 type="password"
                 name="password"
-                value={
-                  formData.password
-                }
-                onChange={
-                  handleChange
-                }
+                value={formData.password}
+                onChange={handleChange}
                 required
                 placeholder="Enter your password"
-                className="text-white mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="mt-1 block w-full rounded-xl border border-white/20 bg-primary px-4 py-3 text-white placeholder:text-gray-300 focus:border-accent focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full mt-3 bg-[#3BBFA7] hover:bg-[rgb(80,164,149)] text-white font-semibold py-2 px-4 rounded-md hover:scale-105 transition duration-200"
+              disabled={loading}
+              className="w-full rounded-xl bg-[#3BBFA7] py-3 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:bg-[rgb(80,164,149)] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Register
+              {loading
+                ? "Creating Account..."
+                : "Register"}
             </button>
           </form>
         </div>
