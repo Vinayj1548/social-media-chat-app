@@ -9,7 +9,7 @@ import {
 } from "react";
 import Image from "next/image";
 import EmojiPicker from "emoji-picker-react";
-import { FaSmile } from "react-icons/fa";
+import { FaSmile , FaFileUpload } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 
 import { socket } from "@/lib/socket/socket";
@@ -310,6 +310,11 @@ export default function ChatUI() {
           }
           className="relative flex items-center border-t p-4"
         >
+
+          <FaFileUpload
+                className=" height-20 text-2xl text-white cursor-pointer"
+              />
+          
           {showEmojiPicker && (
             <div
               ref={
@@ -324,6 +329,8 @@ export default function ChatUI() {
               />
             </div>
           )}
+
+          
 
           <input
             type="text"
