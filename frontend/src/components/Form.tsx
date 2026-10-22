@@ -10,10 +10,6 @@ export default function Form() {
 
   const auth = useContext(AuthContext);
 
-  if (!auth) return null;
-
-  const { login, isAuthenticated } = auth;
-
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -21,6 +17,10 @@ export default function Form() {
     email: "",
     password: "",
   });
+
+  if (!auth) return null;
+
+  const { login, isAuthenticated } = auth;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -53,15 +53,13 @@ export default function Form() {
       }
 
       if (data.user?.id) {
-        login(data.user.id);
-
         localStorage.setItem("username", data.user.username);
-
-        localStorage.setItem("userID", data.user.id);
 
         if (data.user?.token) {
           localStorage.setItem("token", data.user.token);
         }
+
+        login(data.user.id);
 
         toast.success("Registration Successful!");
 

@@ -3,9 +3,27 @@
 import {
   createContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
   ReactNode,
 } from "react";
+import { socket } from "@/lib/socket/socket";
+
+const AUTH_CHANGE_EVENT = "auth-state-change";
+
+const subscribeToAuth = (onStoreChange: () => void) => {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(AUTH_CHANGE_EVENT, onStoreChange);
+
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(AUTH_CHANGE_EVENT, onStoreChange);
+  };
+};
+
+const getIsAuthenticated = () =>
+  localStorage.getItem("isAuthenticated") === "true";
+
+const getUserID = () => localStorage.getItem("userID");
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -24,28 +42,38 @@ export const AuthContext =
 export const AuthProvider = ({
   children,
 }: AuthProviderProps) => {
-  const [isAuthenticated, setIsAuthenticated] =
-    useState(false);
-
-  const [userID, setUserID] =
-    useState<string | null>(null);
+  const isAuthenticated = useSyncExternalStore(
+    subscribeToAuth,
+    getIsAuthenticated,
+    () => false,
+  );
+  const userID = useSyncExternalStore(
+    subscribeToAuth,
+    getUserID,
+    () => null,
+  );
 
   useEffect(() => {
-    const auth =
-      localStorage.getItem("isAuthenticated") ===
-      "true";
+    if (!isAuthenticated || !userID) {
+      socket.disconnect();
+      return;
+    }
 
-    const user =
-      localStorage.getItem("userID");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      socket.disconnect();
+      return;
+    }
 
-    setIsAuthenticated(auth);
-    setUserID(user);
-  }, []);
+    socket.auth = { token };
+    socket.connect();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [isAuthenticated, userID]);
 
   const login = (id: string) => {
-    setIsAuthenticated(true);
-    setUserID(id);
-
     localStorage.setItem(
       "isAuthenticated",
       "true"
@@ -55,12 +83,10 @@ export const AuthProvider = ({
       "userID",
       id
     );
+    window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setUserID(null);
-
     localStorage.removeItem(
       "isAuthenticated"
     );
@@ -76,6 +102,7 @@ export const AuthProvider = ({
     localStorage.removeItem(
       "token"
     );
+    window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   };
 
   return (
