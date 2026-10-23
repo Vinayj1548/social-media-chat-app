@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://localhost:5001",
   "https://social-media-chat-app-gilt.vercel.app",
   "https://social-media-chat-app-0xfh.onrender.com",
+  "https://social-media-chat-lcqk9qf2n-vinay-jangids-projects.vercel.app",
 ];
 
 // Socket.IO
