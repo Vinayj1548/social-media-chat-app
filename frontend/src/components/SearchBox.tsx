@@ -18,12 +18,13 @@ interface User {
 
 interface SearchBoxProps {
   onSelectUser: (user: User) => void;
+  activeUserId?: string;
 }
 
 const SKELETON_ROWS = 3;
 const MAX_STAGGER_ROWS = 8;
 
-export default function SearchBox({ onSelectUser }: SearchBoxProps) {
+export default function SearchBox({ onSelectUser , activeUserId }: SearchBoxProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -73,18 +74,20 @@ export default function SearchBox({ onSelectUser }: SearchBoxProps) {
 
   useEffect(() => {
     const handleReceiveMessage = ({ senderID }: { senderID: string }) => {
-      setUnreadMessages((prev) => ({
-        ...prev,
-        [senderID]: (prev[senderID] ?? 0) + 1,
-      }));
-    };
+     if (senderID === activeUserId) return;
 
-    socket.on("receiveMessage", handleReceiveMessage);
+     setUnreadMessages((prev) => ({
+       ...prev,
+       [senderID]: (prev[senderID] ?? 0) + 1,
+     }));
+   };
 
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-    };
-  }, []);
+   socket.on("receiveMessage", handleReceiveMessage);
+
+   return () => {
+     socket.off("receiveMessage", handleReceiveMessage);
+   };
+  }, [activeUserId]);
 
   const filteredUsers = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();

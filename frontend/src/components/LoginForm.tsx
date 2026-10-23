@@ -3,7 +3,7 @@
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 import { AuthContext } from "@/context/AuthContext";
 
@@ -85,8 +85,6 @@ export default function LoginForm() {
 
   return (
     <>
-      <ToastContainer position="bottom-right" theme="dark" />
-
       <div className="flex max-h-[calc(40vh-7rem)] items-center justify-center">
         <div
           className="

@@ -2,7 +2,7 @@
 
 import { useState, useContext } from "react";
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { AuthContext } from "@/context/AuthContext";
 
 export default function Form() {
@@ -80,7 +80,6 @@ export default function Form() {
 
   return (
     <div className="flex h-50vw items-center justify-center">
-      <ToastContainer position="bottom-right" theme="dark" />
 
       {!isAuthenticated && (
         <div

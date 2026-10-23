@@ -16,9 +16,10 @@ export const socket = io(SOCKET_URL || "http://localhost:5001", {
     callback({ token });
   },
 
-  transports: ["websocket", "polling"],
+  transports: ["polling", "websocket"],
+  tryAllTransports: true,
   reconnection: true,
-  reconnectionAttempts: 5,
+  reconnectionAttempts: Infinity,
   reconnectionDelay: 2000,
   withCredentials: true,
 });

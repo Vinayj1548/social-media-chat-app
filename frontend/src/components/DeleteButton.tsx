@@ -11,7 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { AuthContext } from "@/context/AuthContext";
  
 const EMPTY_FORM = { username: "", password: "" };
@@ -163,7 +163,6 @@ export default function DeleteButton() {
  
       <Portal>
         {/* Kept outside the modal condition so the success toast is not lost when the dialog closes. */}
-        <ToastContainer position="bottom-right" theme="dark" />
  
         {show && (
           <div

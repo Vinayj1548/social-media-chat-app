@@ -3,29 +3,20 @@
 import { useContext, useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import EmojiPicker from "emoji-picker-react";
-import { FaSmile, FaTimes } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
+import { FaSmile } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 import { AuthContext } from "@/context/AuthContext";
 import { socket } from "@/lib/socket/socket";
 import SearchBox from "@/components/SearchBox";
-import AttachmentPicker from "@/components/AttachmentPicker";
 import sendImg from "@/assets/send.png";
 
 // How long to wait for the server to acknowledge a message.
 const SEND_TIMEOUT_MS = 30000;
-const MAX_TOTAL_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
 interface User {
   _id: string;
   username: string;
-}
-
-interface Attachment {
-  name: string;
-  type: string;
-  size: number;
-  data: string; // data URL
 }
 
 interface Message {
@@ -33,41 +24,12 @@ interface Message {
   senderID: string;
   senderName?: string;
   receiverID: string;
-  attachments?: Attachment[];
 }
 
 interface MessageAcknowledgement {
   ok?: boolean;
   error?: string;
 }
-
-const formatSize = (bytes: number) => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-const fileKey = (file: File) =>
-  `${file.name}-${file.size}-${file.lastModified}`;
-
-const totalBytes = (files: File[]) =>
-  files.reduce((sum, file) => sum + file.size, 0);
-
-const readFileAsDataUrl = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-      } else {
-        reject(new Error(`Could not read ${file.name}.`));
-      }
-    };
-    reader.onerror = () => {
-      reject(reader.error ?? new Error(`Could not read ${file.name}.`));
-    };
-    reader.readAsDataURL(file);
-  });
 
 export default function ChatUI() {
   const auth = useContext(AuthContext);
@@ -78,15 +40,10 @@ export default function ChatUI() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Wraps both the emoji button and the picker, so clicking the button
-  // does not count as an "outside" click.
   const emojiWrapperRef = useRef<HTMLDivElement>(null);
-
   const selectedId = selectedUser?._id;
 
   useEffect(() => {
@@ -94,16 +51,50 @@ export default function ChatUI() {
     setUsrName(localStorage.getItem("username") || "");
   }, []);
 
+  // Receive text messages.
+  const lastNotificationRef = useRef<{
+    id: string;
+    time: number;
+  } | null>(null);
+
   useEffect(() => {
+    if (!usrID) return;
+
     const handleReceiveMessage = (messageData: Message) => {
-      if (messageData.receiverID !== usrID) return;
+      console.log("Received message:", messageData);
+
+      if (messageData.receiverID !== usrID) {
+        console.log("Receiver ID mismatch");
+        return;
+      }
 
       if (messageData.senderID !== selectedId) {
-        toast.info(
-          `New message from ${messageData.senderName || "Someone"}: ${
-            messageData.text || "sent an attachment"
-          }`,
-        );
+        const notificationId = `${messageData.senderID}-${messageData.receiverID}-${messageData.text}`;
+        const now = Date.now();
+
+        const previous = lastNotificationRef.current;
+        const isDuplicate =
+          previous?.id === notificationId && now - previous.time < 1000;
+
+        if (!isDuplicate) {
+          lastNotificationRef.current = {
+            id: notificationId,
+            time: now,
+          };
+
+          toast.info(
+            `New message from ${messageData.senderName || "Someone"}: ${
+              messageData.text || "sent a message"
+            }`,
+            {
+              autoClose: 4000,
+              closeButton: true,
+              closeOnClick: true,
+              pauseOnHover: false,
+              pauseOnFocusLoss: false,
+            },
+          );
+        }
       }
 
       setMessages((prev) => [...prev, messageData]);
@@ -116,12 +107,16 @@ export default function ChatUI() {
     };
   }, [usrID, selectedId]);
 
-  // Scroll the message list itself. scrollIntoView can scroll the whole page.
+  // Scroll the message list itself.
   useEffect(() => {
     const el = scrollRef.current;
-    el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    el?.scrollTo({
+      top: el.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages, selectedId]);
 
+  // Close the emoji picker when clicking outside it.
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -150,37 +145,20 @@ export default function ChatUI() {
     : [];
 
   const trimmedMessage = message.trim();
-  const hasContent = trimmedMessage.length > 0 || pendingFiles.length > 0;
-  const canSend = Boolean(selectedUser) && !sending && hasContent;
+
+  const canSend =
+    Boolean(selectedUser) && !sending && trimmedMessage.length > 0;
 
   const handleSelectUser = (user: User) => {
     setSelectedUser(user);
-    setPendingFiles([]);
+    setShowEmojiPicker(false);
   };
 
-  const handleFilesSelected = (files: File[]) => {
-    const known = new Set(pendingFiles.map(fileKey));
-    const fresh = files.filter((file) => {
-      const key = fileKey(file);
-      if (known.has(key)) return false;
-      known.add(key);
-      return true;
-    });
-
-    const next = [...pendingFiles, ...fresh];
-
-    if (totalBytes(next) > MAX_TOTAL_ATTACHMENT_BYTES) {
-      toast.error("Attachments exceed the 10 MB total limit.");
-      return;
-    }
-
-    setPendingFiles(next);
-  };
-
+  // Send a text message through Socket.IO.
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!selectedUser || sending || !hasContent) return;
+    if (!selectedUser || sending || !trimmedMessage) return;
 
     if (!socket.connected) {
       toast.error("Chat is disconnected. Please wait for it to reconnect.");
@@ -190,21 +168,11 @@ export default function ChatUI() {
     setSending(true);
 
     try {
-      const attachments: Attachment[] = await Promise.all(
-        pendingFiles.map(async (file) => ({
-          name: file.name,
-          type: file.type || "application/octet-stream",
-          size: file.size,
-          data: await readFileAsDataUrl(file),
-        })),
-      );
-
       const messageData: Message = {
         text: trimmedMessage,
         senderID: usrID,
         senderName: usrName,
         receiverID: selectedUser._id,
-        attachments: attachments.length > 0 ? attachments : undefined,
       };
 
       await new Promise<void>((resolve, reject) => {
@@ -216,13 +184,12 @@ export default function ChatUI() {
             (timeoutError: Error | null, response?: MessageAcknowledgement) => {
               if (timeoutError) {
                 console.error("Send Message Error:", timeoutError);
-                reject(
-                  new Error("The message timed out. Please try again."),
-                );
+
+                reject(new Error("The message timed out. Please try again."));
               } else if (response?.ok === false || response?.error) {
                 reject(
                   new Error(
-                    response?.error ?? "The server could not save the message.",
+                    response.error ?? "The server could not send the message.",
                   ),
                 );
               } else {
@@ -232,11 +199,12 @@ export default function ChatUI() {
           );
       });
 
+      // Add the sent message to the sender's conversation.
       setMessages((prev) => [...prev, messageData]);
       setMessage("");
-      setPendingFiles([]);
     } catch (error) {
       console.error("Send Message Error:", error);
+
       toast.error(
         error instanceof Error ? error.message : "Could not send the message.",
       );
@@ -255,13 +223,15 @@ export default function ChatUI() {
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-7xl flex-col gap-6 px-4 py-6 text-white md:flex-row md:px-6">
-      <ToastContainer />
 
+      {/* User list */}
       <aside className="w-full shrink-0 rounded-3xl bg-[#61568C] p-5 md:w-80">
         <h1 className="mb-5 text-2xl font-bold">Messages</h1>
+
         <SearchBox onSelectUser={handleSelectUser} activeUserId={selectedId} />
       </aside>
 
+      {/* Chat window */}
       <div className="flex min-h-[32rem] min-w-0 flex-1 flex-col overflow-hidden rounded-3xl bg-[#61568C]">
         <header className="flex min-h-[4rem] items-center border-b border-white/10 bg-[#F2A488] px-6 text-lg font-bold text-[#2E2445]">
           {selectedUser
@@ -269,6 +239,7 @@ export default function ChatUI() {
             : "Select a user to chat"}
         </header>
 
+        {/* Messages */}
         <div
           ref={scrollRef}
           aria-live="polite"
@@ -296,59 +267,16 @@ export default function ChatUI() {
                   }`}
                 >
                   {chatMessage.text && <p>{chatMessage.text}</p>}
-
-                  {chatMessage.attachments?.map((attachment, attachmentIndex) => (
-                    <a
-                      key={`${attachment.name}-${attachmentIndex}`}
-                      href={attachment.data}
-                      download={attachment.name}
-                      className="flex items-center justify-between gap-4 rounded-lg bg-black/10 px-3 py-2 text-sm hover:bg-black/20"
-                    >
-                      <span className="min-w-0 truncate">{attachment.name}</span>
-                      <span className="shrink-0 text-xs opacity-75">
-                        {formatSize(attachment.size)}
-                      </span>
-                    </a>
-                  ))}
                 </div>
               </div>
             );
           })}
         </div>
 
+        {/* Text-only message form */}
         <form onSubmit={sendMessage} className="border-t border-white/10 p-4">
-          {pendingFiles.length > 0 && (
-            <ul
-              aria-label="Files ready to send"
-              className="mb-3 flex flex-wrap gap-2"
-            >
-              {pendingFiles.map((file, index) => (
-                <li
-                  key={fileKey(file)}
-                  className="flex max-w-full items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm"
-                >
-                  <span className="max-w-[12rem] truncate">{file.name}</span>
-                  <span className="shrink-0 text-xs text-white/60">
-                    {formatSize(file.size)}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${file.name}`}
-                    onClick={() =>
-                      setPendingFiles((current) =>
-                        current.filter((_, fileIndex) => fileIndex !== index),
-                      )
-                    }
-                    className="shrink-0 rounded p-1 text-white/70 hover:bg-white/10 hover:text-white"
-                  >
-                    <FaTimes aria-hidden="true" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
           <div className="flex items-center gap-3">
+            {/* Emoji picker */}
             <div ref={emojiWrapperRef} className="relative shrink-0">
               <button
                 type="button"
@@ -372,6 +300,7 @@ export default function ChatUI() {
               )}
             </div>
 
+            {/* Message input */}
             <input
               type="text"
               value={message}
@@ -384,12 +313,7 @@ export default function ChatUI() {
               className="min-w-0 flex-1 rounded-xl bg-white p-3 text-[#29223f] placeholder:text-gray-500 disabled:cursor-not-allowed disabled:opacity-60"
             />
 
-            <AttachmentPicker
-              disabled={!selectedUser || sending}
-              maxFileSizeMB={10}
-              onFilesSelected={handleFilesSelected}
-            />
-
+            {/* Send button */}
             <button
               type="submit"
               aria-label="Send message"
